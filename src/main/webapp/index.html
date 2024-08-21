@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Page</title>
+    <script>
+        // Function to fetch plain text data
+        function fetchData() {
+            fetch('http://localhost:8080/lb-app/hello') // Ensure this URL is correct
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('response').innerText = data;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+
+        // Function to fetch JSON data
+        function fetchJsonData() {
+            fetch('http://localhost:8080/lb-app/rest/endpoint') // Ensure this URL is correct
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('response').innerText = JSON.stringify(data);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('fetchDataButton').addEventListener('click', fetchData);
+            document.getElementById('fetchJsonButton').addEventListener('click', fetchJsonData);
+        });
+    </script>
+</head>
+<body>
+    <h1>Deployment Successful!</h1>
+    <button id="fetchDataButton">Fetch Plain Text Data</button>
+    <button id="fetchJsonButton">Fetch JSON Data</button>
+    <div id="response"></div>
+</body>
+</html>
