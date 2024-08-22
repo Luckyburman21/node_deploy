@@ -1,0 +1,84 @@
+Given your database details and the need to configure WildFly, here's a step-by-step guide to setting up your environment with the provided MSSQL database settings.
+
+1. Location of standalone.xml
+<path-to-wildfly>/standalone/configuration/standalone.xml
+
+<subsystem xmlns="urn:jboss:domain:datasources:4.0">
+    <datasources>
+        <!-- Existing H2 datasource -->
+        <datasource jndi-name="java:jboss/datasources/ExampleDS" pool-name="ExampleDS" enabled="true" use-java-context="true">
+            <connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE</connection-url>
+            <driver>h2</driver>
+            <security>
+                <user-name>sa</user-name>
+                <password>sa</password>
+            </security>
+        </datasource>
+
+        <!-- SQL Server datasource for MSSQL Express using Windows Authentication -->
+        <datasource jndi-name="java:jboss/datasources/ExampleDS" pool-name="ExampleDS" enabled="true" use-java-context="true">
+            <connection-url>jdbc:sqlserver://DESKTOP-M3I8VIS\SQLEXPRESS;databaseName=master;integratedSecurity=true;</connection-url>
+            <driver>sqlserver</driver>
+            <!-- No need for security credentials for Windows Authentication -->
+        </datasource>
+
+        <drivers>
+            <driver name="h2" module="com.h2database.h2">
+                <xa-datasource-class>org.h2.jdbcx.JdbcDataSource</xa-datasource-class>
+            </driver>
+            
+            <!-- SQL Server driver -->
+            <driver name="sqlserver" module="com.microsoft.sqlserver">
+                <xa-datasource-class>com.microsoft.sqlserver.jdbc.SQLServerXADataSource</xa-datasource-class>
+            </driver>
+        </drivers>
+    </datasources>
+</subsystem>
+
+
+
+
+
+
+
+2. Configuring WildFly with MSSQL DataSource
+2.1 Create a Module for the SQL Server JDBC Driver
+Create the Module Directory Structure:
+
+mkdir -p <path-to-wildfly>/modules/com/microsoft/sqlserver/main
+Place the JDBC Driver JAR and module.xml
+
+<?xml version="1.0" encoding="UTF-8"?>
+<module xmlns="urn:jboss:module:1.1" name="com.microsoft.sqlserver">
+    <resources>
+        <resource-root path="sqljdbc42.jar"/> <!-- Adjust the file name if necessary -->
+    </resources>
+    <dependencies>
+        <module name="javax.api"/>
+        <module name="javax.transaction.api"/>
+    </dependencies>
+</module>
+
+
+
+
+
+  $undertow.onGet("/test-db-connection",
+            { headers: { "content-type": "application/json" } },
+            ['jndi:java:jboss/datasources/ExampleDS', function ($exchange, db) {
+                try {
+                    // Perform a simple query to check the connection
+                    var result = db.select("SELECT 1"); // Simple query to check connection
+                    var jsonResult = JSON.stringify({ success: true, message: "Database connection is successful." });
+        
+                  
+                    $exchange.send(jsonResult);
+                } catch (e) {
+                    var errorResult = JSON.stringify({ success: false, error: e.message });
+                  
+                    $exchange.send(errorResult);
+                }
+            }]
+        );
+
+

@@ -5,7 +5,7 @@
     <script>
         // Function to fetch plain text data
         function fetchData() {
-            fetch('http://localhost:8080/lb-app/hello') // Ensure this URL is correct
+            fetch('http://localhost:8080/eacs-app/hello') // Ensure this URL is correct
                 .then(response => response.text())
                 .then(data => {
                     document.getElementById('response').innerText = data;
@@ -17,7 +17,7 @@
 
         // Function to fetch JSON data
         function fetchJsonData() {
-            fetch('http://localhost:8080/lb-app/rest/endpoint') // Ensure this URL is correct
+            fetch('http://localhost:8080/eacs-app/rest/endpoint') // Ensure this URL is correct
                 .then(response => response.json())
                 .then(data => {
                     document.getElementById('response').innerText = JSON.stringify(data);

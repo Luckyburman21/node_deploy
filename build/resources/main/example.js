@@ -6,39 +6,49 @@ $undertow
         }]);
 
 
+        $undertow.onGet("/test-route",
+            { headers: { "content-type": "text/plain", "Access-Control-Allow-Origin": "*" } },
+            [function ($exchange) {
+                var id = 1;
+                $exchange.send("Test route received ID: " + id);
+            }]
+        );
         
-// Handle GET request for JSON response
-$undertow
-    .onGet("/rest/endpoint",
-        {headers: {"content-type": "application/json"}},
-        [function ($exchange) {
-            // Send a JSON response
-            $exchange.send(JSON.stringify({message: 'Hello World'}));
-        }]);
-
-// Handle POST request with string data
-$undertow
-    .onPost("/string",
-        {headers: {"content-type": "text/plain"}},
-        ['$entity', function ($exchange, entity) {
-            // Handle POST request with string data
-            $exchange.send("You posted: " + entity);
-        }]);
-
-// Handle POST request with JSON data
-$undertow
-    .onPost("/json",
-        {headers: {"content-type": "text/plain"}},
-        ['$entity:json', function ($exchange, entity) {
-            // Handle POST request with JSON data
-            $exchange.send("You posted: " + entity['name']);
-        }]);
-
-// Handle POST request with form data
-$undertow
-    .onPost("/form",
-        {headers: {"content-type": "text/plain"}},
-        ['$entity:form', function ($exchange, entity) {
-            // Handle POST request with form data
-            $exchange.send("You posted: " + entity.get('name'));
-        }]);
+        $undertow.onGet("/test-db-connection",
+            { headers: { "content-type": "application/json" } },
+            ['jndi:java:jboss/datasources/ExampleDS', function ($exchange, db) {
+                try {
+                    // Perform a simple query to check the connection
+                    var result = db.select("SELECT 1"); // Simple query to check connection
+                    var jsonResult = JSON.stringify({ success: true, message: "Database connection is successful." });
+        
+                  
+                    $exchange.send(jsonResult);
+                } catch (e) {
+                    var errorResult = JSON.stringify({ success: false, error: e.message });
+                  
+                    $exchange.send(errorResult);
+                }
+            }]
+        );
+        
+        $undertow.onGet("/read-record",
+            { headers: { "content-type": "application/json" } },
+            ['jndi:java:jboss/datasources/ExampleDS', function ($exchange, db) {
+                
+        
+                try {
+                    var result = db.select("SELECT * FROM lucky WHERE id = 1"); // Adjust as needed
+                    var jsonResult = JSON.stringify(result);
+        
+                    // Attempt to set headers and send response
+                    $exchange.send(jsonResult);
+                } catch (e) {
+                    // Basic error handling
+                    var errorResult = JSON.stringify({ error: e.message });
+                    $exchange.send(errorResult);
+                }
+            }]
+        );
+        
+    
